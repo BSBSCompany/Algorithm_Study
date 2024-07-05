@@ -1,0 +1,140 @@
+using System.Collections;
+
+public class Program
+{
+    public const int BingoSize = 5; //빙고판 길이
+    public static bool[,] tf_board; // 빙고가 불러 졌는지 안불러 졌는지 체크하기 위한 빙고판 크기의 2차원 배열
+    public static List<int> vertical_lindes;   // 빙고 성공한 가로 라인
+    public static List<int> horizontal_lindes; // 빙고 성공한 세로 라인
+    public static List<int> diagonal_lindes;  // 빙고 대각선 성공한 라인(무조건 2개)
+    public static Dictionary<int, Tuple<int, int>> numsDic;  //숫자(num)을 key로 하고, 해당 숫자가 BingGo 판에서 위치한 위치를 반환해주기 위한 변수
+    private static int cntLines;
+    private static int ans;
+    
+    static void Main(string[] args)
+    {
+        #region 변수 선언 및 초기화
+        tf_board = new bool[BingoSize, BingoSize];            //빙고판 선언
+        vertical_lindes = new List<int>();
+        horizontal_lindes = new List<int>();
+        diagonal_lindes = new List<int>();                  //대각선은 무조건 2개
+        numsDic = new Dictionary<int, Tuple<int, int>>();    
+        Queue<int> numbersQ = new Queue<int>();    //사회자가 불러줄 숫자들 리스트
+        ans = 0;
+        cntLines = 0;
+        #endregion
+            
+        #region 빙고 초기값 세팅
+        for (var i = 0; i < BingoSize; i++)
+        {
+            int[] inputline = Array.ConvertAll(Console.ReadLine().Split(), int.Parse);
+            for (var j = 0; j < inputline.Length; j++)
+            {
+                numsDic.Add(inputline[j], Tuple.Create(i,j));
+                tf_board[i, j] = false;
+            }
+        }
+        #endregion
+
+        #region 사회자로부터 빙고 입력 받기
+        for (var i = 0; i < BingoSize; i++)
+        {
+            int[] inputline = Array.ConvertAll(Console.ReadLine().Split(), int.Parse);
+            foreach (var num in inputline)
+                numbersQ.Enqueue(num);
+        }
+        #endregion
+
+        #region Simulation 돌리기 + 턴 증가
+        while (numbersQ.TryDequeue(out int number) && cntLines < 3)
+        {
+            //턴 증가 시켜주기
+            ans += 1;
+            Simulation(number);
+            if (cntLines >= 3) break;
+        }
+        #endregion
+        
+        //마지막 값 출력
+        Console.WriteLine(ans);
+    }
+    
+    private static void Simulation(int number)
+    {
+        //1. 사회자가 불러준 숫자가 어디에 있는지 가져오고 표시해주기
+        var (x, y) = numsDic[number];
+        tf_board[x, y] = true;
+
+        //2. 빙고의 라인 체크 O(2 * bingoSize + 2)
+        CheckingHorizontalLine(y);
+        CheckingVerticalLine(x);
+        CheckingDiagonalLine(x, y);
+
+        // 각 빙고 라인 숫자들 더해서 업데이트
+        cntLines = vertical_lindes.Count + horizontal_lindes.Count + diagonal_lindes.Count;
+    }
+
+    //세로 체크
+    private static void CheckingHorizontalLine(int y)
+    {
+        if(horizontal_lindes.Contains(y)) //이미 성공한 라인이라면
+            return;
+        
+        for (int i = 0; i < BingoSize; i++)
+        {
+            if (!tf_board[i, y])
+                return;
+        }
+        
+        //여기까지 나오는 경우라면, 성공한 것임!
+        horizontal_lindes.Add(y);
+    }
+    
+    //가로 체크
+    private static void CheckingVerticalLine(int x)
+    {
+        if(vertical_lindes.Contains(x)) //이미 성공한 라인이라면
+            return;
+        
+        for (int i = 0; i < BingoSize; i++)
+        {
+            if (!tf_board[x, i])
+                return;
+        }
+        
+        //여기 가지 나오는 경우라면, 성공한 것임!
+        vertical_lindes.Add(x);
+    }
+
+    private static void CheckingDiagonalLine(int x,int y)
+    {
+        //대각선 체크
+        if (x != y && x + y != BingoSize - 1) return;
+
+        //일단 왼쪽 위 -> 오른쪽 아래 대각선 체크
+        if (!diagonal_lindes.Contains(0))
+        {
+            bool tf = true;
+            for (int i = 0; i < BingoSize; i++)
+            {
+                if (tf_board[i, i]) continue;
+                tf = false;
+            }
+            
+            if (tf) diagonal_lindes.Add(0);
+        }
+        
+        //왼쪽 아래 -> 오른쪽 위 대각선 체크
+        if (!diagonal_lindes.Contains(1))
+        {
+            bool tf = true;
+            for (int i = 0; i < BingoSize; i++)
+            {
+                if (tf_board[i, BingoSize - i - 1]) continue;
+                tf = false;
+            }
+            
+            if (tf) diagonal_lindes.Add(1);
+        }
+    }
+}

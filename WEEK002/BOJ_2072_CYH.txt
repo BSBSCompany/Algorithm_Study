@@ -1,0 +1,132 @@
+
+public enum MyColor
+{
+    Write,
+    Black,
+    None
+}
+
+public class BAEJOON_2072_CYH
+{
+    public static int[] dxs = { -1, -1, 0, 1, 1, 1, 0, -1};
+    public static int[] dys = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    private const int BoardSize = 20;
+    private static Stone[,] stoneBoard;
+    private static int ans = -1;
+    
+    public static void Main(string[] args)
+    {
+        // 오목 판 초기화
+        stoneBoard = new Stone[BoardSize, BoardSize];
+        for (var i = 0; i < BoardSize; i++)
+        {
+            for (var j = 0; j < BoardSize; j++)
+            {
+                stoneBoard[i, j] = new Stone(-1, -1);
+            }
+        }
+
+        int stoneCnt = Array.ConvertAll(Console.ReadLine().Split(),int.Parse)[0];
+        Queue<Stone> queue = new Queue<Stone>();
+
+        // 순서대로 입력 받기
+        MyColor turnColor = MyColor.Write;
+        for (int i = 0; i < stoneCnt; i++)
+        {
+            turnColor = turnColor == MyColor.Black ? MyColor.Write : MyColor.Black;
+
+            int[] inputPos = Array.ConvertAll(Console.ReadLine().Split(), int.Parse);
+            queue.Enqueue(new Stone(inputPos[0], inputPos[1] , turnColor));
+        }
+
+        int turn = 0;
+        // 입력 하나씩 받으면서, 업데이트
+        while (queue.TryDequeue(out Stone stone ))
+        {
+            turn += 1;
+
+            UpdateBoard(stone);
+
+            if (Simulation(stone))
+            {
+                ans = turn;
+                break;
+            }
+        }
+        
+        Console.Write(ans);
+    }
+
+    private static void UpdateBoard(Stone stone)
+    {
+        int x = stone.x;
+        int y = stone.y;
+
+        stoneBoard[x, y] = stone;
+    }
+
+    private static bool Simulation(Stone stone)
+    {
+        return CheckLine(stone);
+    }
+
+    private static bool InRange(int x, int y)
+    {
+        return x is >= 1 and < BoardSize && y is >= 1 and < BoardSize;
+    }
+
+    private static bool CheckLine(Stone stone)
+    {
+        //4방향을 체크하면서 오목이 되었는지 판별하기
+        int x = stone.x;
+        int y = stone.y;
+        MyColor myColor = stone.color;
+        
+        for (int i = 0; i < 4; i++)
+        {
+            int cnt = 1;
+            
+            (int dx, int dy) = (dxs[i], dys[i]);
+            // 정 방향 체크
+            (int nx, int ny) = (x + dx, y + dy);
+
+            while (InRange(nx, ny) && myColor == stoneBoard[nx, ny].color)
+            {
+                cnt += 1;
+                nx += dx;
+                ny += dy;
+            }
+
+            // 반대 방향 체크
+            dx = dxs[(i + 4) % 8];
+            dy = dys[(i + 4) % 8];
+            
+            (nx, ny) = (x + dx, y + dy);
+            
+            while (InRange(nx, ny) && myColor == stoneBoard[nx, ny].color)
+            {
+                cnt += 1;
+                nx += dx;
+                ny += dy;
+            }
+
+            if (cnt == 5) return true;
+        }
+        return false;
+    }
+}
+
+
+public class Stone
+{
+    public MyColor color;
+    public int x;
+    public int y;
+
+    public Stone(int x, int y, MyColor color = MyColor.None)
+    {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+    }
+}

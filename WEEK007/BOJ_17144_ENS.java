@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FineDustBye {
+public class Main {
 
     public static int[] dr = {-1, 0, 1, 0};
     public static int[] dc = {0, 1, 0, -1};
@@ -35,7 +35,6 @@ public class FineDustBye {
             }
         }
 
-
         for (int i = 0; i < time; i++) {
             diffuse(map);
             airCleaner(map);
@@ -48,7 +47,7 @@ public class FineDustBye {
         int answer = 0;
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {
-                if(map[i][j] != -1){
+                if (map[i][j] != -1) {
                     answer += map[i][j];
                 }
             }
@@ -68,7 +67,7 @@ public class FineDustBye {
             }
         }
 
-        initializeArray(map);
+        initializeArray(map); // List에 담아주고 Map을 초기화 하는 작업 : 값을 새로 담기 위한 작업
 
         for (FineDust fineDust : fineDusts) {
 
@@ -78,13 +77,11 @@ public class FineDustBye {
             int enableSpread = 0;
 
 
-            if (fineDust.value != -1) {
+            if (fineDust.value != -1) { // 뿌리기 전에 몇칸을 사용하는지 나타내는 메서드
                 for (int i = 0; i < CIRCUIT; i++) {
-
                     int newDr = fineDust.r + dr[i];
                     int newDc = fineDust.c + dc[i];
-
-                    if (newDr >= 0 && newDr < map.length && newDc >= 0 && newDc < map[0].length && map[newDr][newDc] != -1) {
+                    if (newDr >= 0 && newDr < map.length && newDc >= 0 && newDc < map[0].length && map[newDr][newDc] != -1) { //주변을 탐색할수 있고, 공기청정기를 만나지 않는 조건
                         enableSpread++;
                     }
                 }
@@ -92,7 +89,7 @@ public class FineDustBye {
                 newCurrentValue = currentValue - Math.abs(spreadValue * enableSpread);
 
 
-                for (int i = 0; i < CIRCUIT; i++) {
+                for (int i = 0; i < CIRCUIT; i++) { //미세먼지에 대한 정보를 밀어넣는 방법
 
                     int newDr = fineDust.r + dr[i];
                     int newDc = fineDust.c + dc[i];
@@ -110,7 +107,7 @@ public class FineDustBye {
     private static void airCleaner(int[][] map) {
         int upCleaner = 0;
         int downCleaner = 0;
-        for (int i = 0; i < map.length; i++) {
+        for (int i = 0; i < map.length; i++) { //상하관계를 찾기 위한 로직
             if (map[i][0] == -1) {
                 if (upCleaner == 0) {
                     upCleaner = i;
@@ -133,25 +130,29 @@ public class FineDustBye {
 
         int newUpCol = 0;
         int newUpRow = 0;
-        int currentUpRow = upR - 1;
+        int currentUpRow = upR - 1; // 공기청정기 위에서 시작
         int currentUpCol = 0;
         for (int i = 0; i < CIRCUIT; i++) {
-            while (true) {
-                    newUpRow = currentUpRow + dr[i];
-                    newUpCol = currentUpCol + dc[i];
 
-                    if (!isaBoolean(upR, map, newUpRow, newUpCol)) {
-                        break;
-                    }
-                    if (map[newUpRow][newUpCol] == -1) {
-                        map[currentUpRow][currentUpCol] = 0;
-                        break;
-                    } else {
-                        map[currentUpRow][currentUpCol] = map[newUpRow][newUpCol];
-                    }
-                    currentUpRow = newUpRow;
-                    currentUpCol = newUpCol;
+            while (true) {
+                newUpRow = currentUpRow + dr[i];
+                newUpCol = currentUpCol + dc[i];
+
+                if (!isUpCheck(upR, map, newUpRow, newUpCol)) { //가져오려는 값에 대해 OutOfRange 나오는 경우
+                    break;
+                }
+
+                if (map[newUpRow][newUpCol] == -1) { // 가져올때 -1 즉 에어컨이 있을경우 공기를 정화하고 끝내는 메서드
+                    map[currentUpRow][currentUpCol] = 0;
+                    break;
+                } else {
+                    map[currentUpRow][currentUpCol] = map[newUpRow][newUpCol];
+                }
+                currentUpRow = newUpRow;
+                currentUpCol = newUpCol;
             }
+
+            //값이 넘어갔을경우 최대값 및 최솟값으로 변경해주는 로직
             if (newUpRow < 0) {
                 currentUpRow = 0;
             } else if (newUpRow >= map.length) {
@@ -163,29 +164,35 @@ public class FineDustBye {
             } else if (newUpCol >= map[0].length) {
                 currentUpCol = map[0].length - 1;
             }
-
         }
+
+
 
         int newDownCol = 0;
         int newDownRow = 0;
-        int currentDownRow = downR+1;
+        int currentDownRow = downR + 1; // 공기청정기 아래에서 시작
         int currentDownCol = 0;
         for (int i = 0; i < CIRCUIT; i++) {
+
             while (true) {
-                    newDownRow = currentDownRow + drr[i];
-                    newDownCol = currentDownCol + drc[i];
-                    if (!isaBoolean2(downR, map, newDownRow, newDownCol)) {
-                        break;
-                    }
-                    if (map[newDownRow][newDownCol] == -1) {
-                        map[currentDownRow][currentDownCol] = 0;
-                        break;
-                    } else {
-                        map[currentDownRow][currentDownCol] = map[newDownRow][newDownCol];
-                    }
-                    currentDownRow = newDownRow;
-                    currentDownCol = newDownCol;
+                newDownRow = currentDownRow + drr[i];
+                newDownCol = currentDownCol + drc[i];
+
+                if (!isDownCheck(downR, map, newDownRow, newDownCol)) { //가져오려는 값에 대해 OutOfRange 나오는 경우
+                    break;
+                }
+
+                if (map[newDownRow][newDownCol] == -1) { // 가져올때 -1 즉 에어컨이 있을경우 공기를 정화하고 끝내는 메서드
+                    map[currentDownRow][currentDownCol] = 0;
+                    break;
+                } else {
+                    map[currentDownRow][currentDownCol] = map[newDownRow][newDownCol];
+                }
+                currentDownRow = newDownRow;
+                currentDownCol = newDownCol;
             }
+
+            //값이 넘어갔을경우 최대값 및 최솟값으로 변경해주는 로직
             if (newDownRow < 0) {
                 currentDownRow = 0;
             } else if (newDownRow >= map.length) {
@@ -197,20 +204,8 @@ public class FineDustBye {
             } else if (newDownCol >= map[0].length) {
                 currentDownCol = map[0].length - 1;
             }
-
         }
-
-
     }
-
-    private static boolean isaBoolean(int upR, int[][] map, int newUpRow, int newUpCol) {
-        return newUpRow >= 0 && newUpRow <= upR && newUpCol >= 0 && newUpCol < map[0].length;
-    }
-
-    private static boolean isaBoolean2(int upR, int[][] map, int newUpRow, int newUpCol) {
-        return newUpRow >= upR && newUpRow<map.length && newUpCol >= 0 && newUpCol < map[0].length;
-    }
-
 
     public static void initializeArray(int[][] array) {
         for (int i = 0; i < array.length; i++) {
@@ -222,9 +217,14 @@ public class FineDustBye {
         }
     }
 
-    private static boolean isLimitMap(int[][] map, int newUpRow, int newUpCol) {
-        return newUpRow >= 0 && newUpRow < map.length && newUpCol >= 0 && newUpCol < map[0].length;
+    private static boolean isUpCheck(int upR, int[][] map, int newUpRow, int newUpCol) {
+        return newUpRow >= 0 && newUpRow <= upR && newUpCol >= 0 && newUpCol < map[0].length;
     }
+
+    private static boolean isDownCheck(int downR, int[][] map, int newDownRow, int newDownCol) {
+        return newDownRow >= downR && newDownRow < map.length && newDownCol >= 0 && newDownCol < map[0].length;
+    }
+
 }
 
 class FineDust {

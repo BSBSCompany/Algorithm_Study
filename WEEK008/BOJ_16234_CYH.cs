@@ -1,4 +1,4 @@
-﻿public class BJO_16234_CYH
+﻿public class BOJ_16234_CYH
 {
     //상 하 좌 우
     private static int[,] directions = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };

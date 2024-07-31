@@ -1,6 +1,4 @@
-﻿namespace codingTest;
-
-public class BJO_11559_CYH
+﻿public class BOJ_11559_CYH
 {
     private static Char[,] Map;
     private static int ans;

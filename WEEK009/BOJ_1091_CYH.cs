@@ -72,7 +72,7 @@ public class BOJ_1091_CYH
         bool isAllOk = true;
         foreach (var card in cards)
         {
-            if (card.CheckMyPlayer()) continue;
+            if (card.IsCorrectPlayer()) continue;
             
             isAllOk = false;
             break;
@@ -85,7 +85,7 @@ public class BOJ_1091_CYH
         bool isAllOk = true;
         foreach (var card in cards)
         {
-            if (card.CheckMyInitNum()) continue;
+            if (card.IsSameInitNum()) continue;
             
             isAllOk = false;
             break;
@@ -106,12 +106,12 @@ public class BOJ_1091_CYH
             this.goalPlayer = goalPlayer;
         }
 
-        public bool CheckMyPlayer()
+        public bool IsCorrectPlayer()
         {
             return myOrder%3 == goalPlayer;
         }
 
-        public bool CheckMyInitNum()
+        public bool IsSameInitNum()
         {
             return initOrder == myOrder;
         }
